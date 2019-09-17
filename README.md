@@ -1,7 +1,7 @@
 
 # Simulation of Networked non-Markovian Agent Models
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
-[![Build Status](https://travis-ci.org/gerritgr/LumPyQest.svg?branch=master)](https://travis-ci.org/gerritgr/LumPyQest)
+[![Build Status](https://travis-ci.com/gerritgr/non-markovian-simulation.svg?branch=master)
 
 Copyright: 2019, Gerrit Großmann, [Group of Modeling and Simulation](https://mosi.uni-saarland.de/) at [Saarland University](http://www.cs.uni-saarland.de/)
 
