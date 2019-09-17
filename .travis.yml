@@ -6,5 +6,5 @@ julia:
 install:
   - ls
 script:
-  - julia main.jl 1 2 4 graph.txt out.txt
+  - julia sis_reject.jl 10 graph_10k_5p_Infected.txt sis_model_out.txt
 
