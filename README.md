@@ -12,13 +12,33 @@ Official code for our paper [Rejection-Based Simulation of Non-Markovian Agents 
 
 ## Installation
 ------------------
-TBA
-##### Requirements:
-
-TBA
+Install Julia following the instructions on [https://julialang.org/downloads/platform.html](https://julialang.org/downloads/platform.html). 
+Install packages with 
+```console
+julia setup.jl
+```
 ## Example Usage
 -----------------
-TBA
+```console
+julia sis_reject.jl 10 graph_10k_5p_Infected.txt sis_model_out.txt
+```
+where `10` is the time horizon and `graph_10k_5p_Infected.txt` is the contact graph (including the initial labeling).
+The corresponding rates and rate functions are part of the Julia code.
+
+#### Network File 
+The network file contains containing a labeled graph specifying the initial state, each line having the form `<Nodeid>;<Label>;<Neighbor1>,<Neighbor2>,...`
+```sh
+0;I;31,29,94,13,83
+1;S;66,15,73
+2;S;29,61,26,80,16,83,30,62,3,93,27,87,68,18,79,6
+3;I;83,2,29,4,28,61,46,21,9,49,41,68,16,74
+4;S;82,28,12,83,3,62,66,68
+...
+```
+Nodes start with id 0 and are sorted. 
+Isolates (nodes withouth neighbors) are not supported (yet). 
+There should be at least one node for each possible label. 
+
 ##### Output:
 TBA
 
