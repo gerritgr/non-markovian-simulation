@@ -22,7 +22,8 @@ julia setup.jl
 ```console
 julia sis_reject.jl 10 graph_10k_5p_Infected.txt sis_model_out.txt
 ```
-where `10` is the time horizon and `graph_10k_5p_Infected.txt` is the contact graph (including the initial labeling).
+where `10` is the time horizon and `graph_10k_5p_Infected.txt` is the contact graph (including the initial labeling)
+and `sis_model_out.txt` is the name of the output file.
 The corresponding rates and rate functions are part of the Julia code.
 
 #### Network File 
