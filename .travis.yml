@@ -4,7 +4,7 @@ julia:
   - 1.1
   - 1.0.3
 install:
-  - ls
+  - julia setup.jl
 script:
   - julia sis_reject.jl 10 graph_10k_5p_Infected.txt sis_model_out.txt
 
