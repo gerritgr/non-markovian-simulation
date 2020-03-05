@@ -44,7 +44,7 @@ The network file contains containing a labeled graph specifying the initial stat
 4;S;82,28,12,83,3,62,66,68
 ...
 ```
-Nodes start with id 0 and are sorted. 
+Nodes start with id 0 and are sorted (rendering the first number somewhat redundant). 
 Isolates (nodes withouth neighbors) are not supported (yet). 
 There should be at least one node for each possible label. 
 
