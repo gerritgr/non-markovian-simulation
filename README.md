@@ -19,6 +19,14 @@ julia setup.jl
 ```
 ## Example Usage
 -----------------
+There is an off-the-shelf script to run the rejection- and baseline-code on all available graph-files:
+
+```console
+python evaluation.py
+```
+
+Besides, you can run the Julia-code using:
+
 ```console
 julia sis_reject.jl 10 graph_10k_5p_Infected.txt sis_model_out.txt
 ```
