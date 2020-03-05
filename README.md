@@ -5,7 +5,7 @@
 
 Copyright: 2019, Gerrit Großmann, [Group of Modeling and Simulation](https://mosi.uni-saarland.de/) at [Saarland University](http://www.cs.uni-saarland.de/)
 
-Version: 0.1 (Please note that this code is an experimental version in a very early development stage.)
+Version: 0.1 (Please note that this is proof-of-concept code in a very early development stage.)
 ## Overview
 ------------------
 Official code for our paper [Rejection-Based Simulation of Non-Markovian Agents on Complex Networks](https://www.researchgate.net/publication/335841274_Rejection-Based_Simulation_of_Non-Markovian_Agents_on_Complex_Networks). 
