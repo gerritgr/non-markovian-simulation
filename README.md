@@ -19,7 +19,7 @@ julia setup.jl
 ```
 ## Example Usage
 -----------------
-There is an off-the-shelf script to run the rejection- and baseline-code on all available graph-files:
+There is an off-the-shelf script (that also installs the required packages) to run the rejection- and baseline-code on all available graph-files:
 
 ```console
 python evaluation.py
