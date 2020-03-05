@@ -1,8 +1,17 @@
 language: julia
+
+os:
+  - linux
+  - osx
+  - windows
+
 julia:
-  - nightly
+  - 1.0
   - 1.1
-  - 1.0.3
+  - 1.2
+  - 1.3
+  - nightly
+  
 install:
   - julia setup.jl
 script:
