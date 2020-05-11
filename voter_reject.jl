@@ -7,7 +7,7 @@ using Plots
 
 
 #
-# call with: julia main.jl 10 graph_10k.txt  out.txt
+# call with: julia exp4_reject.jl 10 graph.txt  unif_reject.txt
 #
 
 #*********************************
@@ -33,42 +33,64 @@ const NeighborhoodStates = Dict{Node,State}
 #*********************************
 
 const NUMBER_OF_SAVES = 301
-const STEP = 1.0/500.0  # 300 for evalutaion
+const STEP = 1.0/1000.0
 
 #
 # rate upper bounds (over approximate rate for all possible changes in neighborhood)
 #
 
-#julia exp3_reject.jl 20 graph_10k.txt bull.txt
+function next_event_time(target_state::State, neighbor_restimes::NeighborhoodTimes, neighbor_states::NeighborhoodStates)::Tuple{Real,Real}
+    rate::Real = 1.0
+    t_e::Real = -log(rand())/rate
+    return t_e, rate
 
-#a*b*(t*b)^(a-1)
+    #if target_state == Infected()
+    #    mu = 0.4
+    #    number_neighbors::Int64 = length(neighbor_states)
+    #    rate::Real = mu*number_neighbors
+    #    t_e::Real = -log(rand())/rate
+    #    return t_e, rate
+    #end
 
-function infection_overapprox(residence_time::Real, neighbor_restimes::NeighborhoodTimes, neighbor_states::NeighborhoodStates)::Real
-    a::Real = 2.05
-    b::Real = 1.0 # overapprox
-    return a*b*(residence_time*b)^(a-1)
-end
-
-function recovery_overapprox(residence_time::Real, neighbor_restimes::NeighborhoodTimes, neighbor_states::NeighborhoodStates)::Real
-    a::Real = 2.0
-    b::Real = 1.0 # overapprox
-    return a*b*(residence_time*b)^(a-1)
+    #return rand()*1.0, 100.0 #100 is dummy careful!
+    #rate_rec::Real = 1.0
+    #t_e_rec::Real = -log(rand())/rate_rec
+    #return t_e_rec, rate_rec
 end
 
 #
 # rate functinos (real)
 #
+
 function infection(residence_time::Real, neighbor_restimes::NeighborhoodTimes, neighbor_states::NeighborhoodStates)::Real
-    a::Real = 2.05
-    b::Real = length([s for (n,s) in neighbor_states if s == Infected()])/length(neighbor_states)
-    return a*b*(residence_time*b)^(a-1)
+    k_I = length([(n, s) for (n, s) in neighbor_states if s == Infected()]) / length(neighbor_states)
+
+    if k_I == 0.0
+        return 0.0
+    end
+
+    t = residence_time
+
+    k = k_I #+ 1.0  #mod
+
+    rate = 1/t - k/(exp(k * t) - 1)
+    return rate
 end
 
 function recovery(residence_time::Real, neighbor_restimes::NeighborhoodTimes, neighbor_states::NeighborhoodStates)::Real
-    a::Real = 2.0
-    b::Real = length([s for (n,s) in neighbor_states if s == Susceptible()])/length(neighbor_states)
-    return a*b*(residence_time*b)^(a-1)
+    k_S = length([(n, s) for (n, s) in neighbor_states if s == Susceptible()]) / length(neighbor_states)
+
+    if k_S == 0.0
+        return 0.0
+    end
+
+    k = k_S + 1.0
+
+    t = residence_time
+    rate = 1/t - k/(exp(k * t) - 1)
+    return rate
 end
+
 
 
 #*********************************
@@ -243,27 +265,30 @@ function create_event(src_node::Node, model::Model)::Tuple{Reaction, Real}
     neighbor_states::NeighborhoodStates = Dict(n=>get_state(n, model) for n in neighbor_nodes)
     neighbor_restimes::NeighborhoodTimes = Dict(n=>model.current_time-model.time_last_switch[n] for n in neighbor_nodes)
 
-    integral_size::Real = -log(rand()) # exp dist rand variate
-    time_shift::Real = 0.0
-    while model.current_time + time_shift <= model.horizon
-        time_shift += STEP
-        shifted_neighbor_restimes = Dict(n=>res_time+time_shift for (n,res_time) in neighbor_restimes) #res_time here is actual res time in future
-        if target_state == Infected()
-            current_rate = infection_overapprox(src_time_in_state+time_shift, shifted_neighbor_restimes, neighbor_states)
-        else
-            current_rate = recovery_overapprox(src_time_in_state+time_shift, shifted_neighbor_restimes, neighbor_states)
-        end
-        integral_size -= current_rate*STEP
-        if integral_size <= 0.5*STEP
-            reaction_time = model.current_time+time_shift
-            reaction=Reaction(src_state,target_state,current_rate)
-            return reaction, reaction_time
-        end
-    end
-
-    return Reaction(src_state,target_state,0.0), model.horizon * 10 #dummy
-
+    t_e::Real, rate_over_approx::Real = next_event_time(target_state, neighbor_restimes, neighbor_states)
+    reaction_time = model.current_time+t_e
+    reaction=Reaction(src_state,target_state,rate_over_approx)
+    return reaction, reaction_time
 end
+    #integral_size::Real = -log(rand()) # exp dist rand variate
+    #time_shift::Real = 0.0
+    #while model.current_time + time_shift <= model.horizon
+    #    time_shift += STEP
+    #    shifted_neighbor_restimes = Dict(n=>res_time+time_shift for (n,res_time) in neighbor_restimes) #res_time here is actual res time in future
+    #    if target_state == Infected()
+    #        current_rate = infection_overapprox(src_time_in_state+time_shift, shifted_neighbor_restimes, neighbor_states)
+    #    else
+    #        current_rate = recovery_overapprox(src_time_in_state+time_shift, shifted_neighbor_restimes, neighbor_states)
+    #    end
+    #    integral_size -= current_rate*STEP
+    #    if integral_size <= 0.5*STEP
+    #        reaction_time = model.current_time+time_shift
+    #        reaction=Reaction(src_state,target_state,current_rate)
+    #        return reaction, reaction_time
+    #    end
+    #end
+    #return Reaction(src_state,target_state,0.0), model.horizon * 10 #dummy
+#end
 
 
 function read_gaph(graph_file)
