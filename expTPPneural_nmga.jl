@@ -35,6 +35,84 @@ const NeighborhoodStates = Dict{Node,State}
 const NUMBER_OF_SAVES = 301
 const STEP = 1.0/1000.0
 
+
+
+#*********************************
+#  Simulation Step
+#*********************************
+
+function step!(model::Model, restime_list::Array{Real, 1})
+    local res_time::Real, n::Node,  neighbors::Neighborhood, state_i::State, restime_i::Real, rate_i::Real
+
+    c::Real = 1.0
+    b::Real = 1.0
+    mu::Real = 0.01
+    step_to_inhibit::Int64 = 5
+
+    current_min_rest_time::Real = 100000000.0
+    current_winner::Node = -1
+
+    for (n,neighbors) in model.graph
+        rate::Real = mu
+
+        state_i = get_state(n, model)
+        t = restime_list[n+1]
+        s_neig = 0
+        i_neig = 0
+        for neig_i in neighbors
+            t_neig = restime_list[neig_i+1]
+            c_i = c
+            if (i_neig+n) % step_to_inhibit == 0
+                c_i = -1*c
+            end
+            rate += c_i*(1.0/(t_neig+b))
+        end
+        rate = max(0.000000000001, tanh(rate))
+        res_time = -log(rand())/rate
+        if res_time < current_min_rest_time
+            current_min_rest_time = res_time
+            current_winner = n
+        end
+    end
+
+    if current_min_rest_time > 0.00001 # this is to mare sure intensity starting at 0 does not break algorithm
+        current_min_rest_time = 0.00001
+        current_winnter = -1
+    end
+
+    for (i,n) in enumerate(restime_list)
+        restime_list[i] += current_min_rest_time
+    end
+
+    if current_winner != -1
+        restime_list[current_winner+1] = 0.0
+        model.time_info["all_steps"] += 1
+
+    end
+
+
+    model.current_time += current_min_rest_time
+
+    if current_winner != -1
+        if get_state(current_winner, model) == Infected()
+            set_state!(current_winner, model, Susceptible())
+            model.current_counts[Infected()] -= 1
+            model.current_counts[Susceptible()] += 1
+        else
+            set_state!(current_winner, model, Infected())
+            model.current_counts[Infected()] += 1
+            model.current_counts[Susceptible()] -= 1
+        end
+    end
+
+    save!(model)
+
+end
+
+
+
+
+
 #
 # rate upper bounds (over approximate rate for all possible changes in neighborhood)
 #
@@ -184,73 +262,6 @@ end
     #end
     #rate = max(0, tanh(rate))
 
-function step!(model::Model, restime_list::Array{Real, 1})
-    local res_time::Real, n::Node,  neighbors::Neighborhood, state_i::State, restime_i::Real, rate_i::Real
-
-    c::Real = 1.0
-    b::Real = 1.0
-    mu::Real = 0.01
-    step_to_inhibit::Int64 = 5
-
-    current_min_rest_time::Real = 100000000.0
-    current_winner::Node = -1
-
-    for (n,neighbors) in model.graph
-        rate::Real = mu
-
-        state_i = get_state(n, model)
-        t = restime_list[n+1]
-        s_neig = 0
-        i_neig = 0
-        for neig_i in neighbors
-            t_neig = restime_list[neig_i+1]
-            c_i = c
-            if (i_neig+n) % step_to_inhibit == 0
-                c_i = -1*c
-            end
-            rate += c_i*(1.0/(t_neig+b))
-        end
-        rate = max(0.000000000001, tanh(rate))
-        res_time = -log(rand())/rate
-        if res_time < current_min_rest_time
-            current_min_rest_time = res_time
-            current_winner = n
-        end
-    end
-
-    if current_min_rest_time > 0.00001 # this is to mare sure intensity starting at 0 does not break algorithm
-        current_min_rest_time = 0.00001
-        current_winnter = -1
-    end
-
-    for (i,n) in enumerate(restime_list)
-        restime_list[i] += current_min_rest_time
-    end
-
-    if current_winner != -1
-        restime_list[current_winner+1] = 0.0
-        model.time_info["all_steps"] += 1
-
-    end
-
-
-    model.current_time += current_min_rest_time
-
-    if current_winner != -1
-        if get_state(current_winner, model) == Infected()
-            set_state!(current_winner, model, Susceptible())
-            model.current_counts[Infected()] -= 1
-            model.current_counts[Susceptible()] += 1
-        else
-            set_state!(current_winner, model, Infected())
-            model.current_counts[Infected()] += 1
-            model.current_counts[Susceptible()] -= 1
-        end
-    end
-
-    save!(model)
-
-end
 
 function simulation!(model::Model)
     restime_list :: Array{Real, 1} = [0.0 for _ in model.labeling]

@@ -68,9 +68,9 @@ function infection(src_node::Node, residence_time::Real, neighbor_restimes::Neig
 
     for (n,t) in neighbor_restimes
         if (n+src_node) % step_to_inhibit == 0
-            c = -1*c
+            c_i = -1*c
         end
-        rate += c*(1.0/(t+b))
+        rate += c_i*(1.0/(t+b))
     end
 
     rate = max(0, tanh(rate))

@@ -4,6 +4,9 @@
 .idea/*
  .idea/workspace.xml
 
+ .DS_Store
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 __pycache__/*

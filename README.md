@@ -49,11 +49,14 @@ Isolates (nodes withouth neighbors) are not supported (yet).
 There should be at least one node for each possible label. 
 
 ##### Output:
-TBA
+- `.txt` file containing the trajectory
+- `.pdf` file with a visualization
+- `.txt` file with the runtime
 
 ## TODOs
 ------------------
 TBA
+
 
 ## Known Issues and Pitfalls
 ------------------

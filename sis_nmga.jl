@@ -35,6 +35,75 @@ const NeighborhoodStates = Dict{Node,State}
 const NUMBER_OF_SAVES = 301
 const STEP = 1.0/1000.0
 
+
+
+#*********************************
+#  Simulation Step
+#*********************************
+
+function step!(model::Model, restime_list::Array{Real, 1})
+    local res_time::Real, rate::Real, n::Node,  neighbors::Neighborhood, state_i::State, restime_i::Real, rate_i::Real
+
+    current_min_rest_time::Real = 100000.0
+    current_winner::Node = -1
+    mu::Real = 0.4
+
+    for (n,neighbors) in model.graph
+        state_i = get_state(n, model)
+        restime_i = restime_list[n+1]
+        if state_i == Infected()
+            rate_i = 1.0/(1-restime_i)
+            res_time = -log(rand())/rate_i
+        else
+            rate_i = 0.0
+            for neig_i in neighbors
+                if get_state(neig_i,model) == Infected()
+                    rate_i += mu*exp(-mu * restime_list[neig_i+1])
+                end
+            end
+            res_time = -log(rand())/rate_i
+        end
+
+        if res_time < current_min_rest_time
+            current_min_rest_time = res_time
+            current_winner = n
+        end
+    end
+
+    if current_min_rest_time > 0.0001 # this is to mare sure intensity starting at 0 does not break algorithm
+        current_min_rest_time = 0.0001
+        current_winnter = -1
+    end
+
+    for (i,n) in enumerate(restime_list)
+        restime_list[i] += current_min_rest_time
+    end
+
+    if current_winner != -1
+        restime_list[current_winner+1] = 0
+    end
+
+    model.current_time += current_min_rest_time
+    model.time_info["all_steps"] += 1
+
+    if get_state(current_winner, model) == Infected()
+        set_state!(current_winner, model, Susceptible())
+        model.current_counts[Infected()] -= 1
+        model.current_counts[Susceptible()] += 1
+    else
+        set_state!(current_winner, model, Infected())
+        model.current_counts[Infected()] += 1
+        model.current_counts[Susceptible()] -= 1
+    end
+
+    save!(model)
+
+end
+
+
+
+
+
 #
 # rate upper bounds (over approximate rate for all possible changes in neighborhood)
 #
@@ -173,64 +242,6 @@ function check_rejection(node::Node, reaction::Reaction, model::Model)::Bool
     return rand() > current_rate/original_rate
 end
 
-function step!(model::Model, restime_list::Array{Real, 1})
-    local res_time::Real, rate::Real, n::Node,  neighbors::Neighborhood, state_i::State, restime_i::Real, rate_i::Real
-
-    current_min_rest_time::Real = 100000.0
-    current_winner::Node = -1
-    mu::Real = 0.4
-
-    for (n,neighbors) in model.graph
-        state_i = get_state(n, model)
-        restime_i = restime_list[n+1]
-        if state_i == Infected()
-            rate_i = 1.0/(1-restime_i)
-            res_time = -log(rand())/rate_i
-        else
-            rate_i = 0.0
-            for neig_i in neighbors
-                if get_state(neig_i,model) == Infected()
-                    rate_i += mu*exp(-mu * restime_list[neig_i+1])
-                end
-            end
-            res_time = -log(rand())/rate_i
-        end
-
-        if res_time < current_min_rest_time
-            current_min_rest_time = res_time
-            current_winner = n
-        end
-    end
-
-    if current_min_rest_time > 0.0001 # this is to mare sure intensity starting at 0 does not break algorithm
-        current_min_rest_time = 0.0001
-        current_winnter = -1
-    end
-
-    for (i,n) in enumerate(restime_list)
-        restime_list[i] += current_min_rest_time
-    end
-
-    if current_winner != -1
-        restime_list[current_winner+1] = 0
-    end
-
-    model.current_time += current_min_rest_time
-    model.time_info["all_steps"] += 1
-
-    if get_state(current_winner, model) == Infected()
-        set_state!(current_winner, model, Susceptible())
-        model.current_counts[Infected()] -= 1
-        model.current_counts[Susceptible()] += 1
-    else
-        set_state!(current_winner, model, Infected())
-        model.current_counts[Infected()] += 1
-        model.current_counts[Susceptible()] -= 1
-    end
-
-    save!(model)
-
-end
 
 
 

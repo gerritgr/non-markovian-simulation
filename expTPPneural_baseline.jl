@@ -46,10 +46,10 @@ function get_actual_inf_rate(src_node::Node, time_from_now::Real, neighbor_resti
 
     for (n,t) in neighbor_restimes
             if (n+src_node) % step_to_inhibit == 0
-                c = -1*c
+                c_i = -1*c
             end
             t_plus = t+time_from_now
-            rate += c*(1.0/(t_plus+b))
+            rate += c_i*(1.0/(t_plus+b))
     end
 
     rate = max(0, tanh(rate))
